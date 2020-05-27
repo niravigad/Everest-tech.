@@ -1,0 +1,230 @@
+void i2c_Transmission(byte addr, byte cmd, byte data[]) {
+
+  // 7-bit address
+  // 8 bit command
+  // 7 bit address (same)
+  // 8 bit data
+  // 8 bit data
+
+  byte ReadBit7 = 0, ReadBit6 = 0, ReadBit5 = 0, ReadBit4 = 0, ReadBit3 = 0, ReadBit2 = 0, ReadBit1 = 0, ReadBit0 = 0;
+
+  DDRC = DDRC | B00000011;
+  PORTC = B00000011; // bits 1 and 0 are pulled-up.
+  delay(1);
+
+  //Start Condition:
+  PORTC = B00000001; // bit 1 goes down.
+  Wait(hc);
+  PORTC = B00000000;
+  Wait(hc);
+
+  //address bits (6 5 4 3 2 1 0)
+  sendbit(addr, 0x40); //bit6
+  sendbit(addr, 0x20); //bit5
+  sendbit(addr, 0x10); //bit4
+  sendbit(addr, 0x08); //bit3
+  sendbit(addr, 0x04); //bit2
+  sendbit(addr, 0x02); //bit1
+  sendbit(addr, 0x01); //bit0
+
+  //Send Write bit and wait for ack
+  sendWbit();
+
+  //command bits  (7 6 5 4 3 2 1 0)
+  sendbit(cmd, 0x80); //bit7
+  sendbit(cmd, 0x40); //bit6
+  sendbit(cmd, 0x20); //bit5
+  sendbit(cmd, 0x10); //bit4
+  sendbit(cmd, 0x08); //bit3
+  sendbit(cmd, 0x04); //bit2
+  sendbit(cmd, 0x02); //bit1
+  sendbit(cmd, 0x01); //bit0
+
+  //Wait for ack
+  Wait4Ack();
+
+
+  //Repeated Start Condition:
+  PORTC = B00000010;
+  Wait(hc);
+  PORTC = B00000011;
+  Wait(hc);
+  PORTC = B00000001;
+  Wait(hc);
+  PORTC = B00000000;
+  Wait(hc);
+
+  //address bits (6 5 4 3 2 1 0)
+  sendbit(addr, 0x40); //bit6
+  sendbit(addr, 0x20); //bit5
+  sendbit(addr, 0x10); //bit4
+  sendbit(addr, 0x08); //bit3
+  sendbit(addr, 0x04); //bit2
+  sendbit(addr, 0x02); //bit1
+  sendbit(addr, 0x01); //bit0
+
+  //Send Read bit and wait for ack
+  sendRbit();
+
+  //INPUT MODE:
+  DDRC = DDRC & B11111101;
+
+
+  //Get Data MSB
+  ReadBit7 = GetBit() << 6;
+  ReadBit6 = GetBit() << 5;
+  ReadBit5 = GetBit() << 4;
+  ReadBit4 = GetBit() << 3;
+  ReadBit3 = GetBit() << 2;
+  ReadBit2 = GetBit() << 1;
+  ReadBit1 = GetBit();
+  ReadBit0 = GetBit() >> 1;
+
+  data[0] = ReadBit7 | ReadBit6 | ReadBit5 | ReadBit4 | ReadBit3 | ReadBit2 | ReadBit1 | ReadBit0;
+
+  SendAck();
+
+
+  //Get Data LSB
+  ReadBit7 = GetBit() << 6;
+  ReadBit6 = GetBit() << 5;
+  ReadBit5 = GetBit() << 4;
+  ReadBit4 = GetBit() << 3;
+  ReadBit3 = GetBit() << 2;
+  ReadBit2 = GetBit() << 1;
+  ReadBit1 = GetBit();
+  ReadBit0 = GetBit() >> 1;
+
+  data[1] = ReadBit7 | ReadBit6 | ReadBit5 | ReadBit4 | ReadBit3 | ReadBit2 | ReadBit1 | ReadBit0;
+
+  SendNack();
+
+  //Stop Condition:
+  PORTC = B00000000;
+  Wait(hc);
+  PORTC = B00000001;
+  Wait(hc);
+  PORTC = B00000011;
+  Wait(hc);
+  PORTC = B00000011;
+  Wait(hc);
+
+  //Both SDA and SCL stay pulled-up.
+  delay(1);
+
+}
+
+
+byte GetBit() {
+
+  byte b = 0;
+
+  Wait(hc);
+  PORTC =  B00000001;
+  Wait(hc);
+  b = (PINC & 0x02);
+  Wait(hc);
+  PORTC =  B00000000;
+  Wait(hc);
+
+  return b;
+
+}
+
+void SendAck() {
+
+  //Ack
+  DDRC = DDRC | B00000011; // Set SDA to OUTPUT, SCL stays OUTPUT.
+  PORTC = B00000000;
+  Wait(hc);
+
+  PORTC = B00000001;
+  Wait(cl); // in this clock the ack will be sent.
+
+  PORTC = B00000000;
+  Wait(hc);
+
+  DDRC = DDRC & B11111101; // Set SDA to INPUT, SCL stays OUTPUT.
+}
+
+void SendNack() {
+
+  //Ack
+  DDRC = DDRC | B00000011; // Set SDA to OUTPUT, SCL stays OUTPUT.
+  PORTC = B00000010;
+  Wait(hc);
+
+  PORTC = B00000011;
+  Wait(cl); // in this clock the Nack will be sent.
+
+  PORTC = B00000010;
+  Wait(hc);
+
+}
+
+void Wait4Ack() {
+
+  //Ack
+  DDRC = DDRC & B11111101; // Set SDA to INPUT, SCL stays OUTPUT.
+  Wait(hc);
+
+  PORTC =  B00000001;
+  Wait(cl); // in this clock the ack will be received.
+
+  PORTC =  B00000000;
+  Wait(hc);
+
+  DDRC = DDRC | B00000011;
+}
+
+void sendWbit() {
+
+  PORTC = B00000000;
+  Wait(hc);
+  PORTC = B00000001;
+  Wait(hc);
+  PORTC = B00000000;
+  Wait(hc);
+
+  Wait4Ack();
+
+}
+
+void sendRbit() {
+
+  PORTC = B00000010;
+  Wait(hc);
+  PORTC = B00000011;
+  Wait(hc);
+  PORTC = B00000010;
+  Wait(hc);
+
+  Wait4Ack();
+
+}
+
+void sendbit(byte b, byte cutbit) {
+
+  if (byte(b & cutbit) == cutbit) {
+    PORTC = B00000010;
+    Wait(hc);
+    PORTC = B00000011;
+    Wait(hc);
+    PORTC = B00000010;
+    Wait(hc);
+  }
+  else {
+    PORTC = B00000000;
+    Wait(hc);
+    PORTC = B00000001;
+    Wait(hc);
+    PORTC = B00000000;
+    Wait(hc);
+  }
+
+}
+
+void Wait(int n) {
+  m = micros();
+  while (micros() - m < n) ;
+}
