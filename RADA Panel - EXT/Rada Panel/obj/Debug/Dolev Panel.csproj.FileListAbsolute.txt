@@ -1,0 +1,9 @@
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\bin\Debug\Dolev Panel.exe.config
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\bin\Debug\Dolev Panel.exe
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\bin\Debug\Dolev Panel.pdb
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\obj\Debug\Dolev_Panel.Form1.resources
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\obj\Debug\Dolev_Panel.Properties.Resources.resources
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\obj\Debug\Dolev Panel.csproj.GenerateResource.cache
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\obj\Debug\Dolev Panel.csproj.CoreCompileInputs.cache
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\obj\Debug\Dolev Panel.exe
+C:\Everest\Manual Panel\Dolev Panel\Dolev Panel\obj\Debug\Dolev Panel.pdb
