@@ -1,0 +1,114 @@
+//inputs
+
+//outputs
+
+//analog
+
+//relays output
+
+//int NumberOfSwitches = 49;
+//int NumberOfInputs = 4;
+//const int Read_array[NumberOfInputs] = {GPSTCLH, CURR_5V, CURR_24V, CURR_15V};
+
+// variables will change:
+//protocol
+byte X_Header = 114;
+byte X_Footer = 118;
+byte ByteArray[30]={0};
+int ArrayIndex=0;
+boolean FindHeader=false;
+boolean FindFooter=false;
+boolean MsgComplete = false;  // whether the string is complete
+const int Opcode = 1;
+const int Address = 2;
+const int Value = 3;
+const int RelayPosition = 4;
+const int X_Write = 1;
+const int X_Read = 2;
+const int X_Relay = 3;
+const int X_Analog_Read = 5;
+const int X_Set_Port = 5;
+
+//functions
+void SetSwitch (int Switch,int state);
+
+void setup() {
+int Relay=0;
+int Pol=0;
+
+  pinMode(2, INPUT);
+  // initialize the LED pin as an output:  
+  for (Relay=2;Relay<=12;Relay++)
+  {
+    
+      pinMode(Relay, OUTPUT);  
+      digitalWrite(Relay, HIGH); 
+    
+  }
+  
+  Serial.begin(9600); 
+}
+
+int k=0;
+void loop(){
+  int temp=0;
+  int Relay=0;
+  int sensorValue = 0;
+  float voltage=0;
+  int i=0;
+  int num=20;
+   
+     while (Serial.available()) 
+      {        
+        
+              // get the new byte:              
+              byte inChar = Serial.read(); 
+              //Serial.println(inChar);
+              
+              // add it to the inputString:
+              //inputString += inChar;
+              // if the incoming character is a newline, set a flag
+              // so the main loop can do something about it:
+              if (inChar == X_Header)
+              {
+                   //Serial.println("header");
+                    ArrayIndex=0;
+                    FindHeader = true;
+              } 
+              if(FindHeader)
+              {
+                     ByteArray [ArrayIndex++] = inChar;
+              }
+              if (inChar == X_Footer)
+              {
+                    //Serial.println("footer");
+                    FindFooter = true;                    
+              } 
+              
+              if( FindHeader && FindFooter)
+              {
+                      //Serial.println("both");
+                      MsgComplete = true;
+                      FindHeader=false;
+                      FindFooter=false;
+              }
+      }
+      
+      if (MsgComplete) 
+      {
+       
+          for(i=0;i<num;i++)
+          {
+            sensorValue = analogRead(A0);           
+           voltage += sensorValue * (5.0 / 1023.0);
+           delay(50);
+          }      
+          voltage = voltage/num;
+            //voltage = sensorValue * (5.0 / 1023.0);
+          Serial.println(voltage);
+          
+           MsgComplete = false;
+           ArrayIndex=0;
+          delay(50);           
+      }
+  }
