@@ -1,1 +1,2 @@
 An external control panel of ATE , which controls Power supplies and ETH switches
+Gets inforamtion of the Votlage,Current, and communication integrity.
